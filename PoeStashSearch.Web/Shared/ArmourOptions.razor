@@ -1,0 +1,101 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@using PoeStashSearch.Data.Models
+
+<Collapse Visible="@_collapseVisible">
+	<CollapseHeader>
+		<Heading Size="HeadingSize.Is5">
+			<Button Clicked="@(() => _collapseVisible = !_collapseVisible)">Armour Options</Button>
+		</Heading>
+	</CollapseHeader>
+	<CollapseBody>
+		<Row>
+			<Column ColumnSize="ColumnSize.Is12">
+				<Fields ColumnSize="ColumnSize.Is12">
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Armour</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_armourMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_armourMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">% Chance to Block</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_chanceToBlockMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_chanceToBlockMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Energy Shield</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_energyShieldMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_energyShieldMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Evasion Rating</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_evasionRatingMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_evasionRatingMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+				</Fields>
+			</Column>
+		</Row>
+	</CollapseBody>
+</Collapse>
+
+@code {
+
+	public ArmourCriteria? GetArmourCriteriaModel() {
+		if (_armourMaximum.HasValue || _armourMinimum.HasValue || _chanceToBlockMaximum.HasValue || _chanceToBlockMinimum.HasValue || _energyShieldMaximum.HasValue || _energyShieldMinimum.HasValue || _evasionRatingMaximum.HasValue || _evasionRatingMinimum.HasValue) {
+			return new() {
+				ArmourMaximum = _armourMaximum,
+				ArmourMinimum = _armourMinimum,
+				ChanceToBlockMaximum = _chanceToBlockMaximum,
+				ChanceToBlockMinimum = _chanceToBlockMinimum,
+				EnergyShieldMaximum = _energyShieldMaximum,
+				EnergyShieldMinimum = _energyShieldMinimum,
+				EvasionRatingMaximum = _evasionRatingMaximum,
+				EvasionRatingMinimum = _evasionRatingMinimum
+			};
+		}
+
+		return null;
+	}
+
+	private decimal? _armourMaximum;
+	private decimal? _armourMinimum;
+	private decimal? _chanceToBlockMaximum;
+	private decimal? _chanceToBlockMinimum;
+	private bool _collapseVisible = true;
+	private decimal? _energyShieldMaximum;
+	private decimal? _energyShieldMinimum;
+	private decimal? _evasionRatingMaximum;
+	private decimal? _evasionRatingMinimum;
+}

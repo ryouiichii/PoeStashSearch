@@ -1,0 +1,114 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@using PoeStashSearch.Data.Models
+
+<Collapse Visible="@_collapseVisible">
+	<CollapseHeader>
+		<Heading Size="HeadingSize.Is5">
+			<Button Clicked="@(() => _collapseVisible = !_collapseVisible)">Socket Options</Button>
+		</Heading>
+	</CollapseHeader>
+	<CollapseBody>
+		<Row>
+			<Column ColumnSize="ColumnSize.Is12">
+				<Fields ColumnSize="ColumnSize.Is12">
+					<Field ColumnSize="ColumnSize.Is12" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is12">Sockets</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_redSocketsMinimum" Placeholder="R" TValue="long?" style="border-color: red; border-width: 0.2rem"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_greenSocketsMinimum" Placeholder="G" TValue="long?" style="border-color: green; border-width: 0.2rem"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_blueSocketsMinimum" Placeholder="B" TValue="long?" style="border-color: blue; border-width: 0.2rem"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_whiteSocketsMinimum" Placeholder="W" TValue="long?" style="border-color: white; border-width: 0.2rem"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_socketsMinimum" Placeholder="Min" TValue="long?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_socketsMaximum" Placeholder="Max" TValue="long?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is12" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is12">Links</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_redLinksMinimum" Placeholder="R" TValue="long?" style="border-color: red; border-width: 0.2rem"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_greenLinksMinimum" Placeholder="G" TValue="long?" style="border-color: green; border-width: 0.2rem"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_blueLinksMinimum" Placeholder="B" TValue="long?" style="border-color: blue; border-width: 0.2rem"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_whiteLinksMinimum" Placeholder="W" TValue="long?" style="border-color: white; border-width: 0.2rem"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_linksMinimum" Placeholder="Min" TValue="long?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is2">
+							<NumericEdit @bind-Value="@_linksMaximum" Placeholder="Max" TValue="long?"/>
+						</FieldBody>
+					</Field>
+				</Fields>
+			</Column>
+		</Row>
+	</CollapseBody>
+</Collapse>
+
+@code {
+	public SocketCriteria? GetSocketCriteriaModel() {
+		if (_blueLinksMinimum.HasValue || _blueSocketsMinimum.HasValue || _greenLinksMinimum.HasValue || _greenSocketsMinimum.HasValue || _linksMaximum.HasValue || _linksMinimum.HasValue || _redLinksMinimum.HasValue || _redSocketsMinimum.HasValue || _socketsMaximum.HasValue || _socketsMinimum.HasValue || _whiteLinksMinimum.HasValue || _whiteSocketsMinimum.HasValue) {
+			return new() {
+				BlueLinksMinimum = _blueLinksMinimum,
+				BlueSocketsMinimum = _blueSocketsMinimum,
+				GreenLinksMinimum = _greenLinksMinimum,
+				GreenSocketsMinimum = _greenSocketsMinimum,
+				LinksMaximum = _linksMaximum,
+				LinksMinimum = _linksMinimum,
+				RedLinksMinimum = _redLinksMinimum,
+				RedSocketsMinimum = _redSocketsMinimum,
+				SocketsMaximum = _socketsMaximum,
+				SocketsMinimum = _socketsMinimum,
+				WhiteLinksMinimum = _whiteLinksMinimum,
+				WhiteSocketsMinimum = _whiteSocketsMinimum
+			};
+		}
+
+		return null;
+	}
+
+	private long? _blueLinksMinimum;
+	private long? _blueSocketsMinimum;
+	private bool _collapseVisible = true;
+	private long? _greenLinksMinimum;
+	private long? _greenSocketsMinimum;
+	private long? _linksMaximum;
+	private long? _linksMinimum;
+	private long? _redLinksMinimum;
+	private long? _redSocketsMinimum;
+	private long? _socketsMaximum;
+	private long? _socketsMinimum;
+	private long? _whiteLinksMinimum;
+	private long? _whiteSocketsMinimum;
+}

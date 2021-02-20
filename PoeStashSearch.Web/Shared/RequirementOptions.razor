@@ -1,0 +1,100 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@using PoeStashSearch.Data.Models
+
+<Collapse Visible="@_collapseVisible">
+	<CollapseHeader>
+		<Heading Size="HeadingSize.Is5">
+			<Button Clicked="@(() => _collapseVisible = !_collapseVisible)">Requirement Options</Button>
+		</Heading>
+	</CollapseHeader>
+	<CollapseBody>
+		<Row>
+			<Column ColumnSize="ColumnSize.Is12">
+				<Fields ColumnSize="ColumnSize.Is12">
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Level</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_levelMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_levelMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Dexterity</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_dexterityMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_dexterityMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Intelligence</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_intelligenceMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_intelligenceMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Strength</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_strengthMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_strengthMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+				</Fields>
+			</Column>
+		</Row>
+	</CollapseBody>
+</Collapse>
+
+@code {
+	public RequirementCriteria? GetRequirementCriteriaModel() {
+		if (_dexterityMaximum.HasValue || _dexterityMinimum.HasValue || _intelligenceMaximum.HasValue || _intelligenceMinimum.HasValue || _levelMaximum.HasValue || _levelMinimum.HasValue || _strengthMaximum.HasValue || _strengthMinimum.HasValue) {
+			return new() {
+				DexterityMaximum = _dexterityMaximum,
+				DexterityMinimum = _dexterityMinimum,
+				IntelligenceMaximum = _intelligenceMaximum,
+				IntelligenceMinimum = _intelligenceMinimum,
+				LevelMaximum = _levelMaximum,
+				LevelMinimum = _levelMinimum,
+				StrengthMaximum = _strengthMaximum,
+				StrengthMinimum = _strengthMinimum
+			};
+		}
+
+		return null;
+	}
+
+	private bool _collapseVisible = true;
+	private decimal? _dexterityMaximum;
+	private decimal? _dexterityMinimum;
+	private decimal? _intelligenceMaximum;
+	private decimal? _intelligenceMinimum;
+	private decimal? _levelMaximum;
+	private decimal? _levelMinimum;
+	private decimal? _strengthMaximum;
+	private decimal? _strengthMinimum;
+}

@@ -1,0 +1,100 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@using PoeStashSearch.Data.Models
+
+<Collapse Visible="@_collapseVisible">
+	<CollapseHeader>
+		<Heading Size="HeadingSize.Is5">
+			<Button Clicked="@(() => _collapseVisible = !_collapseVisible)">Weapon Options</Button>
+		</Heading>
+	</CollapseHeader>
+	<CollapseBody>
+		<Row>
+			<Column ColumnSize="ColumnSize.Is12">
+				<Fields ColumnSize="ColumnSize.Is12">
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Attacks per Second</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_attacksPerSecondMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_attacksPerSecondMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">% Critical Strike Chance</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_criticalStrikeChanceMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_criticalStrikeChanceMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Physical Damage Bottom-End</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_physicalDamageBottomEndMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_physicalDamageBottomEndMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Physical Damage Top-End</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_physicalDamageTopEndMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_physicalDamageTopEndMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+				</Fields>
+			</Column>
+		</Row>
+	</CollapseBody>
+</Collapse>
+
+@code {
+	public WeaponCriteria? GetWeaponCriteriaModel() {
+		if (_attacksPerSecondMaximum.HasValue || _attacksPerSecondMinimum.HasValue || _criticalStrikeChanceMaximum.HasValue || _criticalStrikeChanceMinimum.HasValue || _physicalDamageBottomEndMaximum.HasValue || _physicalDamageBottomEndMinimum.HasValue || _physicalDamageTopEndMaximum.HasValue || _physicalDamageTopEndMinimum.HasValue) {
+			return new() {
+				AttacksPerSecondMaximum = _attacksPerSecondMaximum,
+				AttacksPerSecondMinimum = _attacksPerSecondMinimum,
+				CriticalStrikeChanceMaximum = _criticalStrikeChanceMaximum,
+				CriticalStrikeChanceMinimum = _criticalStrikeChanceMinimum,
+				PhysicalDamageBottomEndMaximum = _physicalDamageBottomEndMaximum,
+				PhysicalDamageBottomEndMinimum = _physicalDamageBottomEndMinimum,
+				PhysicalDamageTopEndMaximum = _physicalDamageTopEndMaximum,
+				PhysicalDamageTopEndMinimum = _physicalDamageTopEndMinimum
+			};
+		}
+
+		return null;
+	}
+
+	private decimal? _attacksPerSecondMaximum;
+	private decimal? _attacksPerSecondMinimum;
+	private bool _collapseVisible = true;
+	private decimal? _criticalStrikeChanceMaximum;
+	private decimal? _criticalStrikeChanceMinimum;
+	private decimal? _physicalDamageBottomEndMaximum;
+	private decimal? _physicalDamageBottomEndMinimum;
+	private decimal? _physicalDamageTopEndMaximum;
+	private decimal? _physicalDamageTopEndMinimum;
+}

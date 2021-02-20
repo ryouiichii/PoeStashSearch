@@ -1,0 +1,117 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@using PoeStashSearch.Data
+@using PoeStashSearch.Data.Models
+@using StatDescriptionCriteriaModel = PoeStashSearch.Data.Models.StatDescriptionCriteria
+
+<Row>
+	<Column ColumnSize="ColumnSize.Is12">
+		<Autocomplete Data="@StatDescriptionDisplayTextMaps" Filter="AutocompleteFilter.Contains" Placeholder="Search item mods..." SelectedValue="@_selectedStatDescription" SelectedValueChanged="@OnSelectedStatDescriptionChanged" TextField="@(s => s.Key)" ValueField="@(s => s)"/>
+	</Column>
+</Row>
+<Row>
+	<Column ColumnSize="ColumnSize.Is12">
+		<Fields ColumnSize="ColumnSize.Is12">
+			@for (var i = 0; i < _numericValueCount; i++) {
+				var localIndex = i;
+
+				<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+					<FieldLabel ColumnSize="ColumnSize.Is6">Minimum @(localIndex + 1)</FieldLabel>
+					<FieldBody ColumnSize="ColumnSize.Is6">
+						<NumericEdit @bind-Value="@_numericValues[localIndex].Minimum" TValue="decimal?"/>
+					</FieldBody>
+				</Field>
+				<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+					<FieldLabel ColumnSize="ColumnSize.Is6">Maximum @(localIndex + 1)</FieldLabel>
+					<FieldBody ColumnSize="ColumnSize.Is6">
+						<NumericEdit @bind-Value="@_numericValues[localIndex].Maximum" TValue="decimal?"/>
+					</FieldBody>
+				</Field>
+			}
+			@if (_numericValueCount > 1) {
+				<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+					<FieldLabel ColumnSize="ColumnSize.Is6">Minimum Average</FieldLabel>
+					<FieldBody ColumnSize="ColumnSize.Is6">
+						<NumericEdit TValue="decimal?" Value="@_numericValueAverageMinimum"/>
+					</FieldBody>
+				</Field>
+				<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+					<FieldLabel ColumnSize="ColumnSize.Is6">Maximum Average</FieldLabel>
+					<FieldBody ColumnSize="ColumnSize.Is6">
+						<NumericEdit TValue="decimal?" Value="@_numericValueAverageMaximum"/>
+					</FieldBody>
+				</Field>
+			}
+		</Fields>
+	</Column>
+</Row>
+
+
+@code {
+	[Parameter]
+	public ulong Id { get; set; }
+
+	[Parameter]
+	public IDictionary<ulong, StatDescriptionCriteria> StatDescriptionCriteriaComponentMap { get; set; }
+
+	[Parameter]
+	public List<IGrouping<String, StatDescription>> StatDescriptionDisplayTextMaps { get; set; }
+
+	public StatDescriptionCriteriaModel? GetStatDescriptionCriteriaModel() {
+		if (_selectedStatDescription?.Any() ?? false) {
+			var statDescriptionCriteria = new StatDescriptionCriteriaModel {
+				NumericValueMaximumAverage = _numericValueAverageMaximum,
+				NumericValueMinimumAverage = _numericValueAverageMinimum,
+				NumericValueRanges = new Dictionary<int, (decimal? MaximumValue, decimal? MinimumValue)>(),
+				StatDescriptionIds = _selectedStatDescription.Select(s => s.Id).ToList()
+			};
+
+			for (var i = 0; i < Constants.MaximumStatDescriptionNumericValueCount; i++) {
+				if (_numericValues[i].Maximum.HasValue || _numericValues[i].Minimum.HasValue) {
+					statDescriptionCriteria.NumericValueRanges[i + 1] = (_numericValues[i].Maximum, _numericValues[i].Minimum);
+				}
+			}
+
+			return statDescriptionCriteria;
+		}
+
+		return null;
+	}
+
+	protected override void OnAfterRender(bool firstRender) {
+		if (firstRender) {
+			StatDescriptionCriteriaComponentMap[Id] = this;
+		}
+	}
+
+	protected override void OnInitialized() {
+		_numericValues = new (decimal? Maximum, decimal? Minimum)[Constants.MaximumStatDescriptionNumericValueCount];
+	}
+
+	private void OnSelectedStatDescriptionChanged(Object statDescriptionGrouping) {
+		_selectedStatDescription = statDescriptionGrouping as IGrouping<String, StatDescription>;
+		_numericValueCount = _selectedStatDescription?.First().NumericValueCount ?? 0;
+	}
+
+	private decimal? _numericValueAverageMaximum;
+	private decimal? _numericValueAverageMinimum;
+	private long _numericValueCount;
+	private (decimal? Maximum, decimal? Minimum)[] _numericValues;
+	private IGrouping<String, StatDescription> _selectedStatDescription;
+}

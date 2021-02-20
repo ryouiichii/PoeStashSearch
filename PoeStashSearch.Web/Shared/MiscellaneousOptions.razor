@@ -1,0 +1,138 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@using PoeStashSearch.Data.Models
+
+<Collapse Visible="@_collapseVisible">
+	<CollapseHeader>
+		<Heading Size="HeadingSize.Is5">
+			<Button Clicked="@(() => _collapseVisible = !_collapseVisible)">Miscellaneous Options</Button>
+		</Heading>
+	</CollapseHeader>
+	<CollapseBody>
+		<Row>
+			<Column ColumnSize="ColumnSize.Is12">
+				<Fields ColumnSize="ColumnSize.Is12">
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Corrupted</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is6">
+							<Select @bind-SelectedValue="@_isCorrupted">
+								<SelectItem Value="0">Don't Care</SelectItem>
+								<SelectItem Value="1">No</SelectItem>
+								<SelectItem Value="2">Yes</SelectItem>
+							</Select>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Identified</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is6">
+							<Select @bind-SelectedValue="@_isIdentified">
+								<SelectItem Value="0">Don't Care</SelectItem>
+								<SelectItem Value="1">No</SelectItem>
+								<SelectItem Value="2">Yes</SelectItem>
+							</Select>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Item Level</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_itemLevelMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_itemLevelMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Quality</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_qualityMinimum" Placeholder="Min" TValue="decimal?"/>
+						</FieldBody>
+						<FieldBody ColumnSize="ColumnSize.Is3">
+							<NumericEdit @bind-Value="@_qualityMaximum" Placeholder="Max" TValue="decimal?"/>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Rarity</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is6">
+							<Select @bind-SelectedValue="@_rarity">
+								<SelectItem Value="0">Don't Care</SelectItem>
+								<SelectItem Value="1">Magic</SelectItem>
+								<SelectItem Value="2">Normal</SelectItem>
+								<SelectItem Value="3">Rare</SelectItem>
+								<SelectItem Value="4">Unique</SelectItem>
+							</Select>
+						</FieldBody>
+					</Field>
+				</Fields>
+			</Column>
+		</Row>
+	</CollapseBody>
+</Collapse>
+
+@code {
+	public MiscellaneousCriteria? GetMiscellaneousCriteriaModel() {
+		//Using a nullable boolean didn't work for the Select component as the option tied to a
+		// null value did not update the bound variable. So use an integer and translate to a
+		// nullable boolean instead.
+		var isCorrupted = GetBooleanFromInteger(_isCorrupted);
+		var isIdentified = GetBooleanFromInteger(_isIdentified);
+		//As with the nullable boolean, using a nullable enum didn't work.
+		var rarity = GetRarityFromInteger(_rarity);
+
+		if (isCorrupted.HasValue || isIdentified.HasValue || _itemLevelMaximum.HasValue || _itemLevelMinimum.HasValue || _qualityMaximum.HasValue || _qualityMinimum.HasValue || rarity.HasValue) {
+			return new() {
+				IsCorrupted = isCorrupted,
+				IsIdentified = isIdentified,
+				ItemLevelMaximum = _itemLevelMaximum,
+				ItemLevelMinimum = _itemLevelMinimum,
+				QualityMaximum = _qualityMaximum,
+				QualityMinimum = _qualityMinimum,
+				Rarity = rarity
+			};
+		}
+
+		return null;
+	}
+
+	private bool? GetBooleanFromInteger(int number) {
+		return number switch {
+			1 => false,
+			2 => true,
+			_ => null
+		};
+	}
+
+	private ItemRarity? GetRarityFromInteger(int number) {
+		return number switch {
+			1 => ItemRarity.Magic,
+			2 => ItemRarity.Normal,
+			3 => ItemRarity.Rare,
+			4 => ItemRarity.Unique,
+			_ => null
+		};
+	}
+
+	private bool _collapseVisible = true;
+	private int _isCorrupted;
+	private int _isIdentified;
+	private decimal? _itemLevelMaximum;
+	private decimal? _itemLevelMinimum;
+	private decimal? _qualityMaximum;
+	private decimal? _qualityMinimum;
+	private int _rarity;
+}

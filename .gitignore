@@ -1,0 +1,12 @@
+bin/
+obj/
+packages/
+.vs/
+
+# User-specific files
+*.log
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+TODO.txt

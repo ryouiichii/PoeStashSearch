@@ -1,0 +1,56 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@using PoeStashSearch.Web.Events
+@using PoeStashSearch.Web.Services
+@inherits LayoutComponentBase
+@inject IEventBus EventBus
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <div class="main">
+        <div class="top-row px-4">
+	        <span>@_status</span>
+        </div>
+
+        <div class="content px-4">
+            @Body
+        </div>
+    </div>
+</div>
+
+@code{
+	protected override void OnInitialized() {
+        EventBus.Subscribe(nameof(ItemRetrievalService), ItemRetrievalServiceEventReceiverAsync, nameof(MainLayout));
+	}
+
+	private async Task ItemRetrievalServiceEventReceiverAsync(EventArgs eventArgs) {
+		if (eventArgs is ItemRetrievalServiceEventArgs itemRetrievalServiceEventArgs) {
+			await InvokeAsync(() => {
+				_status = itemRetrievalServiceEventArgs.Status;
+
+				StateHasChanged();
+			});
+		}
+	}
+
+	private String _status;
+}

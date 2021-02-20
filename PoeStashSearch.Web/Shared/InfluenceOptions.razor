@@ -1,0 +1,138 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@using PoeStashSearch.Data.Models
+
+<Collapse Visible="@_collapseVisible">
+	<CollapseHeader>
+		<Heading Size="HeadingSize.Is5">
+			<Button Clicked="@(() => _collapseVisible = !_collapseVisible)">Influence Options</Button>
+		</Heading>
+	</CollapseHeader>
+	<CollapseBody>
+		<Row>
+			<Column ColumnSize="ColumnSize.Is12">
+				<Fields ColumnSize="ColumnSize.Is12">
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Crusader</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is6">
+							<Select @bind-SelectedValue="@_isCrusaderInfluenced">
+								<SelectItem Value="0">Don't Care</SelectItem>
+								<SelectItem Value="1">No</SelectItem>
+								<SelectItem Value="2">Yes</SelectItem>
+							</Select>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Elder</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is6">
+							<Select @bind-SelectedValue="@_isElderInfluenced">
+								<SelectItem Value="0">Don't Care</SelectItem>
+								<SelectItem Value="1">No</SelectItem>
+								<SelectItem Value="2">Yes</SelectItem>
+							</Select>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Hunter</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is6">
+							<Select @bind-SelectedValue="@_isHunterInfluenced">
+								<SelectItem Value="0">Don't Care</SelectItem>
+								<SelectItem Value="1">No</SelectItem>
+								<SelectItem Value="2">Yes</SelectItem>
+							</Select>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Redeemer</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is6">
+							<Select @bind-SelectedValue="@_isRedeemerInfluenced">
+								<SelectItem Value="0">Don't Care</SelectItem>
+								<SelectItem Value="1">No</SelectItem>
+								<SelectItem Value="2">Yes</SelectItem>
+							</Select>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Shaper</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is6">
+							<Select @bind-SelectedValue="@_isShaperInfluenced">
+								<SelectItem Value="0">Don't Care</SelectItem>
+								<SelectItem Value="1">No</SelectItem>
+								<SelectItem Value="2">Yes</SelectItem>
+							</Select>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+						<FieldLabel ColumnSize="ColumnSize.Is6">Warlord</FieldLabel>
+						<FieldBody ColumnSize="ColumnSize.Is6">
+							<Select @bind-SelectedValue="@_isWarlordInfluenced">
+								<SelectItem Value="0">Don't Care</SelectItem>
+								<SelectItem Value="1">No</SelectItem>
+								<SelectItem Value="2">Yes</SelectItem>
+							</Select>
+						</FieldBody>
+					</Field>
+				</Fields>
+			</Column>
+		</Row>
+	</CollapseBody>
+</Collapse>
+
+@code {
+	public InfluenceCriteria? GetInfluenceCriteriaModel() {
+		//Using a nullable boolean didn't work for the Select component as the option tied to a
+		// null value did not update the bound variable. So use an integer and translate to a
+		// nullable boolean instead.
+		var isCrusaderInfluenced = GetBooleanFromInteger(_isCrusaderInfluenced);
+		var isElderInfluenced = GetBooleanFromInteger(_isElderInfluenced);
+		var isHunterInfluenced = GetBooleanFromInteger(_isHunterInfluenced);
+		var isRedeemerInfluenced = GetBooleanFromInteger(_isRedeemerInfluenced);
+		var isShaperInfluenced = GetBooleanFromInteger(_isShaperInfluenced);
+		var isWarlordInfluenced = GetBooleanFromInteger(_isWarlordInfluenced);
+
+		if (isCrusaderInfluenced.HasValue || isElderInfluenced.HasValue || isHunterInfluenced.HasValue || isRedeemerInfluenced.HasValue || isShaperInfluenced.HasValue || isWarlordInfluenced.HasValue) {
+			return new() {
+				IsCrusaderInfluenced = isCrusaderInfluenced,
+				IsElderInfluenced = isElderInfluenced,
+				IsHunterInfluenced = isHunterInfluenced,
+				IsRedeemerInfluenced = isRedeemerInfluenced,
+				IsShaperInfluenced = isShaperInfluenced,
+				IsWarlordInfluenced = isWarlordInfluenced
+			};
+		}
+
+		return null;
+	}
+
+	private bool? GetBooleanFromInteger(int number) {
+		return number switch {
+			1 => false,
+			2 => true,
+			_ => null
+		};
+	}
+
+	private bool _collapseVisible = true;
+	private int _isCrusaderInfluenced;
+	private int _isElderInfluenced;
+	private int _isHunterInfluenced;
+	private int _isRedeemerInfluenced;
+	private int _isShaperInfluenced;
+	private int _isWarlordInfluenced;
+}

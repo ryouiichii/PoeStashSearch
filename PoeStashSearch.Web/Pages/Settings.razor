@@ -1,0 +1,226 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@page "/settings"
+@using PoeStashSearch.Api.Http
+@using PoeStashSearch.Api.Models
+@using PoeStashSearch.Web.Settings
+@using DataSettings = PoeStashSearch.Data.Models.Settings;
+@inject IResourcesApiClient ResourcesApiClient
+@inject ISettingsManager SettingsManager
+
+<h3>Settings</h3>
+
+<Container Fluid="true">
+	<Row>
+		<Column ColumnSize="ColumnSize.Is12">
+			<Fields>
+				<Field ColumnSize="ColumnSize.Is12">
+					<FieldBody>
+						<Check @bind-Checked="@_showAccountDetails" TValue="bool">Show Account Details</Check>
+					</FieldBody>
+				</Field>
+				<Field ColumnSize="ColumnSize.Is12">
+					<FieldLabel>Account Name</FieldLabel>
+					<FieldBody>
+						<Validation Validator="@ValidateAccountName">
+							<TextEdit @bind-Text="@_accountName" Placeholder="Account Name" Role="@(_showAccountDetails ? TextRole.Text : TextRole.Password)">
+								<Feedback>
+									<ValidationError>Please enter a valid account name.</ValidationError>
+								</Feedback>
+							</TextEdit>
+						</Validation>
+					</FieldBody>
+				</Field>
+				<Field ColumnSize="ColumnSize.Is12">
+					<FieldLabel>Session Id</FieldLabel>
+					<FieldBody>
+						<Validation Validator="@ValidateSessionId">
+							<TextEdit @bind-Text="@_sessionId" Placeholder="Session Id" Role="@(_showAccountDetails ? TextRole.Text : TextRole.Password)">
+								<Feedback>
+									<ValidationError>Please enter a valid session id.</ValidationError>
+								</Feedback>
+							</TextEdit>
+						</Validation>
+					</FieldBody>
+				</Field>
+				<Field ColumnSize="ColumnSize.Is12">
+					<FieldLabel>League</FieldLabel>
+					<FieldBody>
+						<Autocomplete Data="@_leagues" Filter="AutocompleteFilter.Contains" Placeholder="League" SelectedValue="@_selectedLeague" SelectedValueChanged="@OnSelectedLeagueChanged" TextField="@(l => l.Id)" ValueField="@(l => l)"/>
+						@*
+							Unfortunately the "Validation" component doesn't support the "Autocomplete" component, so a hidden text field bound to the selected
+							 league is used. The "Autocomplete" component will not be styled on success/failure, but the error message is still shown.
+						*@
+						<Validation Validator="@ValidateLeague">
+							<TextEdit @bind-Text="@_selectedLeagueId" Disabled="true" Style="display: none">
+								<Feedback>
+									<ValidationError>Please select a league.</ValidationError>
+								</Feedback>
+							</TextEdit>
+						</Validation>
+					</FieldBody>
+				</Field>
+				<Field ColumnSize="ColumnSize.Is12">
+					<FieldLabel>Realm</FieldLabel>
+					<FieldBody>
+						<Autocomplete Data="@_realms" Filter="AutocompleteFilter.Contains" Placeholder="Realm" SelectedValue="@_selectedRealm" SelectedValueChanged="@OnSelectedRealmChanged" TextField="@(r => r)" ValueField="@(r => r)"/>
+						@*
+							Unfortunately the "Validation" component doesn't support the "Autocomplete" component, so a hidden text field bound to the selected
+							 realm is used. The "Autocomplete" component will not be styled on success/failure, but the error message is still shown.
+						*@
+						<Validation Validator="@ValidateRealm">
+							<TextEdit @bind-Text="@_selectedRealm" Disabled="true" Style="display: none">
+								<Feedback>
+									<ValidationError>Please select a realm.</ValidationError>
+								</Feedback>
+							</TextEdit>
+						</Validation>
+					</FieldBody>
+				</Field>
+				<Field ColumnSize="ColumnSize.Is12">
+					<FieldLabel>Seconds Between Individual Tab Retrieval</FieldLabel>
+					<FieldBody>
+						<Validation Validator="@ValidateDuration">
+							<NumericEdit @bind-Value="@_itemRetrievalServicePauseBetweenTabs" Placeholder="Seconds Between Individual Tab Retrieval">
+								<Feedback>
+									<ValidationError>Please enter a valid number of seconds.</ValidationError>
+								</Feedback>
+							</NumericEdit>
+						</Validation>
+					</FieldBody>
+				</Field>
+				<Field ColumnSize="ColumnSize.Is12">
+					<FieldLabel>Seconds Between Overall Tab Retrieval</FieldLabel>
+					<FieldBody>
+						<Validation Validator="@ValidateDuration">
+							<NumericEdit @bind-Value="@_itemRetrievalServiceSleepDuration" Placeholder="Seconds Between Overall Tab Retrieval">
+								<Feedback>
+									<ValidationError>Please enter a valid number of seconds.</ValidationError>
+								</Feedback>
+							</NumericEdit>
+						</Validation>
+					</FieldBody>
+				</Field>
+			</Fields>
+		</Column>
+	</Row>
+	<Row>
+		<Column ColumnSize="ColumnSize.Is12">
+			<Button Clicked="@OnSaveButtonClickedAsync" Color="Color.Primary" Outline="true" Type="ButtonType.Button">Save</Button>
+		</Column>
+	</Row>
+	<Row>
+		<Column ColumnSize="ColumnSize.Is12">
+			<Alert @ref="_saveResultAlert" Color="@_saveResultAlertColor">
+				<AlertDescription>@_saveResultAlertMessage</AlertDescription>
+				<CloseButton Clicked="@(() => _saveResultAlert.Hide())" />
+			</Alert>
+		</Column>
+	</Row>
+</Container>
+
+@code {
+	protected override async Task OnInitializedAsync() {
+		_leagues = await ResourcesApiClient.GetAllLeaguesAsync();
+		_realms = await ResourcesApiClient.GetAllRealmsAsync();
+		var settings = SettingsManager.GetAllSettings();
+
+		_accountName = settings?.AccountName;
+		_itemRetrievalServicePauseBetweenTabs = settings?.ItemRetrievalServicePauseBetweenTabs;
+		_itemRetrievalServiceSleepDuration = settings?.ItemRetrievalServiceSleepDuration;
+		_selectedLeague = _leagues.FirstOrDefault(l => l.Id.Equals(settings?.League));
+		//Only necessary for the "Validation" component
+		_selectedLeagueId = _selectedLeague?.Id;
+		_selectedRealm = _realms.FirstOrDefault(r => r.Equals(settings?.Realm));
+		_sessionId = settings?.SessionId;
+	}
+
+	private async Task OnSaveButtonClickedAsync() {
+		var settings = new DataSettings {
+			AccountName = _accountName ?? String.Empty,
+			ItemRetrievalServicePauseBetweenTabs = _itemRetrievalServicePauseBetweenTabs ?? 0,
+			ItemRetrievalServiceSleepDuration = _itemRetrievalServiceSleepDuration ?? 0,
+			League = _selectedLeague?.Id ?? String.Empty,
+			Realm = _selectedRealm ?? String.Empty,
+			SessionId = _sessionId ?? String.Empty
+		};
+
+		if (await SettingsManager.SaveSettingsAsync(settings)) {
+			_saveResultAlertColor = Color.Success;
+			_saveResultAlertMessage = "Settings saved.";
+		} else {
+			_saveResultAlertColor = Color.Danger;
+			_saveResultAlertMessage = "Error saving settings.";
+		}
+
+		_saveResultAlert.Show();
+	}
+
+	private void OnSelectedLeagueChanged(Object selectedLeague) {
+		_selectedLeague = selectedLeague as League;
+		//Only necessary for the "Validation" component
+		_selectedLeagueId = _selectedLeague?.Id;
+	}
+
+	private void OnSelectedRealmChanged(Object selectedRealm) {
+		_selectedRealm = selectedRealm as String;
+	}
+
+	private void ValidateAccountName(ValidatorEventArgs e) {
+		var accountName = e.Value as String;
+
+		e.Status = String.IsNullOrWhiteSpace(accountName) ? ValidationStatus.Error : ValidationStatus.Success;
+	}
+
+	private void ValidateDuration(ValidatorEventArgs e) {
+		e.Status = !(e.Value is long duration) || duration < 1 ? ValidationStatus.Error : ValidationStatus.Success;
+	}
+
+	private void ValidateLeague(ValidatorEventArgs e) {
+		var league = e.Value as String;
+		
+		e.Status = String.IsNullOrWhiteSpace(league) ? ValidationStatus.Error : ValidationStatus.Success;
+	}
+
+	private void ValidateRealm(ValidatorEventArgs e) {
+		var realm = e.Value as String;
+		
+		e.Status = String.IsNullOrWhiteSpace(realm) ? ValidationStatus.Error : ValidationStatus.Success;
+	}
+
+	private void ValidateSessionId(ValidatorEventArgs e) {
+		var sessionId = e.Value as String;
+
+		e.Status = String.IsNullOrWhiteSpace(sessionId) ? ValidationStatus.Error : ValidationStatus.Success;
+	}
+
+	private String? _accountName;
+	private long? _itemRetrievalServicePauseBetweenTabs;
+	private long? _itemRetrievalServiceSleepDuration;
+	private ICollection<League> _leagues;
+	private ICollection<String> _realms;
+	private Alert _saveResultAlert;
+	private Color _saveResultAlertColor;
+	private String _saveResultAlertMessage;
+	private League? _selectedLeague;
+	private String? _selectedLeagueId;
+	private String? _selectedRealm;
+	private String? _sessionId;
+	private bool _showAccountDetails;
+}

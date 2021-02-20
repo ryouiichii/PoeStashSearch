@@ -1,0 +1,198 @@
+﻿@*
+Copyright (C) 2021 ryouiichii
+
+This file is part of PoeStashSearch
+
+PoeStashSearch is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PoeStashSearch is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
+*@
+@page "/"
+@using Microsoft.Extensions.Logging
+@using PoeStashSearch.Data
+@using PoeStashSearch.Data.Models
+@using StatDescriptionCriteriaComponent = PoeStashSearch.Web.Shared.StatDescriptionCriteria
+@inject IDatabaseContext DatabaseContext
+@inject ILogger<Index> Logger
+
+<Container Fluid="true">
+	<Row>
+		<Column ColumnSize="ColumnSize.Is6">
+			<Accordion>
+				<ArmourOptions @ref="@_armourOptions" />
+				<InfluenceOptions @ref="@_influenceOptions" />
+				<MiscellaneousOptions @ref="@_miscellaneousOptions" />
+				<RequirementOptions @ref="_requirementOptions" />
+				<SocketOptions @ref="@_socketOptions" />
+				<WeaponOptions @ref="@_weaponOptions" />
+			</Accordion>
+		</Column>
+		<Column ColumnSize="ColumnSize.Is6">
+			<Row>
+				<Column ColumnSize="ColumnSize.Is12">
+					<Autocomplete Data="@_itemCategories" Filter="AutocompleteFilter.Contains" Placeholder="Search item category..." SelectedValue="@_selectedItemCategory" SelectedValueChanged="@OnSelectedItemCategoryChanged" TextField="@(i => i.Name)" ValueField="@(i => i)"/>
+				</Column>
+			</Row>
+			<Row>
+				<Column ColumnSize="ColumnSize.Is12">
+					<Autocomplete Data="@_itemDefinitions" Filter="AutocompleteFilter.Contains" Placeholder="Search item name..." SearchChanged="@OnItemDefinitionSearchChanged" SelectedValue="@_selectedItemDefinition" SelectedValueChanged="@OnSelectedItemDefinitionChanged" TextField="@(i => i.Name)" ValueField="@(i => i)"/>
+				</Column>
+			</Row>
+			@foreach (var statDescriptionCriteria in _statDescriptionCriteriaComponentMap.OrderBy(s => s.Key)) {
+				<StatDescriptionCriteria @key="@statDescriptionCriteria.Key" Id="@statDescriptionCriteria.Key" StatDescriptionCriteriaComponentMap="@_statDescriptionCriteriaComponentMap" StatDescriptionDisplayTextMaps="@_statDescriptionDisplayTextMap"></StatDescriptionCriteria>
+				<Row>
+					<Column ColumnSize="ColumnSize.Is12">
+						<Field ColumnSize="ColumnSize.Is12" Horizontal="true" JustifyContent="JustifyContent.Center">
+							<Button Clicked="@(() => _statDescriptionCriteriaComponentMap.Remove(statDescriptionCriteria.Key))" Color="Color.Primary" Outline="true" Type="ButtonType.Button">Remove Criteria</Button>
+						</Field>
+					</Column>
+				</Row>
+			}
+			<Row>
+				<Column ColumnSize="ColumnSize.Is12">
+					<Button Block="true" Clicked="@(() => _statDescriptionCriteriaComponentMap[_nextStatDescriptionCriteriaComponentId++] = new StatDescriptionCriteriaComponent())" Color="Color.Primary" Outline="true" Type="ButtonType.Button">Add Criteria</Button>
+				</Column>
+			</Row>
+		</Column>
+	</Row>
+	<Row>
+		<Column ColumnSize="ColumnSize.Is12">
+			<Alert @ref="@_errorMessageAlert" Color="Color.Danger">
+				<AlertMessage>@_errorMessage</AlertMessage>
+				<CloseButton Clicked="@(() => _errorMessageAlert.Hide())" />
+			</Alert>
+		</Column>
+	</Row>
+	<Row>
+		<Column ColumnSize="ColumnSize.Is12">
+			<Button Block="true" Clicked="@OnSearchButtonClicked" Color="Color.Primary" Outline="true" Type="ButtonType.Button">Search</Button>
+		</Column>
+	</Row>
+	@if (!String.IsNullOrWhiteSpace(_searchResultsMessage)) {
+		<Row>
+			<Column ColumnSize="ColumnSize.Is12">
+				<p>Found @_searchResults.Count matching items</p>
+			</Column>
+		</Row>
+	}
+	@if (_searchResults.Any()) {
+		<Row>
+			<Column ColumnSize="ColumnSize.Is12">
+				<Table FullWidth="true" Striped="true">
+					<TableHeader>
+						<TableRow>
+							<TableHeaderCell>#</TableHeaderCell>
+							<TableHeaderCell>Item Name</TableHeaderCell>
+							<TableHeaderCell>Stash Name</TableHeaderCell>
+							<TableHeaderCell>Stash Index</TableHeaderCell>
+							<TableHeaderCell>Item (X, Y) Location</TableHeaderCell>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						@for (var i = 0; i < _searchResults.Count; i++) {
+							var localIndex = i;
+							var currentSearchResult = _searchResults.ElementAt(localIndex);
+
+							<TableRow>
+								<TableRowHeader>@(localIndex + 1)</TableRowHeader>
+								<TableRowCell>@currentSearchResult.FullName</TableRowCell>
+								<TableRowCell>@currentSearchResult.StashName</TableRowCell>
+								<TableRowCell>@currentSearchResult.StashIndex</TableRowCell>
+								<TableRowCell>(@(currentSearchResult.StashLocationX + 1), @(currentSearchResult.StashLocationY + 1))</TableRowCell>
+							</TableRow>
+						}
+					</TableBody>
+				</Table>
+			</Column>
+		</Row>
+	}
+</Container>
+
+@code{
+	protected override void OnInitialized() {
+		_itemCategories = DatabaseContext.Items.GetAllItemCategories();
+		_itemDefinitions = DatabaseContext.Items.GetAllItemDefinitions();
+		_searchResults = new List<Item>();
+		_statDescriptionCriteriaComponentMap = new Dictionary<ulong, StatDescriptionCriteriaComponent>();
+		_statDescriptionDisplayTextMap = DatabaseContext.Stats.GetAllStatDescriptions().GroupBy(s => s.DisplayText).ToList();
+	}
+
+	private void OnItemDefinitionSearchChanged(String searchText) {
+		_itemDefinitionSearchText = searchText;
+	}
+
+	private void OnSearchButtonClicked() {
+		try {
+			var armourCriteria = _armourOptions.GetArmourCriteriaModel();
+			var influenceCriteria = _influenceOptions.GetInfluenceCriteriaModel();
+			var itemDefinitionCriteria = !String.IsNullOrWhiteSpace(_itemDefinitionSearchText) || _selectedItemCategory != null || _selectedItemDefinition != null ? new ItemDefinitionCriteria {
+				Id = _selectedItemDefinition?.Id,
+				ItemCategoryId = _selectedItemCategory?.Id,
+				Name = _itemDefinitionSearchText
+			} : null;
+			var miscellaneousCriteria = _miscellaneousOptions.GetMiscellaneousCriteriaModel();
+			var requirementCriteria = _requirementOptions.GetRequirementCriteriaModel();
+			var socketCriteria = _socketOptions.GetSocketCriteriaModel();
+			var statDescriptionCriterias = _statDescriptionCriteriaComponentMap.Select(kv => kv.Value.GetStatDescriptionCriteriaModel()).Where(s => s != null).ToList();
+			var weaponCriteria = _weaponOptions.GetWeaponCriteriaModel();
+
+			if (armourCriteria != null || influenceCriteria != null || itemDefinitionCriteria != null || miscellaneousCriteria != null || requirementCriteria != null || socketCriteria != null || statDescriptionCriterias.Any() || weaponCriteria != null) {
+				_searchResults = DatabaseContext.Items.GetItemsWithStatDescriptions(armourCriteria, influenceCriteria, itemDefinitionCriteria, miscellaneousCriteria, requirementCriteria, socketCriteria, weaponCriteria, statDescriptionCriterias);
+
+				_errorMessageAlert.Hide();
+				_errorMessage = String.Empty;
+				_searchResultsMessage = $"Found {_searchResults.Count} matching items";
+			} else {
+				ShowErrorMessage("Please define at least one search criteria.");
+			}
+		} catch (Exception ex) {
+			ShowErrorMessage("Unexpected exception while searching, please view the log file for details.");
+
+			Logger.LogError(ex, "Exception while attempting to retrieve search results");
+		}
+	}
+
+	private void OnSelectedItemCategoryChanged(Object itemCategory) {
+		_selectedItemCategory = itemCategory as ItemCategory;
+	}
+
+	private void OnSelectedItemDefinitionChanged(Object itemDefinition) {
+		_selectedItemDefinition = itemDefinition as ItemDefinition;
+	}
+
+	private void ShowErrorMessage(String errorMessage) {
+		_errorMessage = errorMessage;
+
+		_errorMessageAlert.Show();
+	}
+
+	private ArmourOptions _armourOptions;
+	private String _errorMessage;
+	private Alert _errorMessageAlert;
+	private InfluenceOptions _influenceOptions;
+	private ICollection<ItemCategory> _itemCategories;
+	private ICollection<ItemDefinition> _itemDefinitions;
+	private String? _itemDefinitionSearchText;
+	private MiscellaneousOptions _miscellaneousOptions;
+	private ulong _nextStatDescriptionCriteriaComponentId;
+	private RequirementOptions _requirementOptions;
+	private ICollection<Item> _searchResults;
+	private String _searchResultsMessage;
+	private ItemCategory _selectedItemCategory;
+	private ItemDefinition _selectedItemDefinition;
+	private IGrouping<String, StatDescription> _selectedStatDescription;
+	private long _selectedStatDescriptionId;
+	private SocketOptions _socketOptions;
+	private IDictionary<ulong, StatDescriptionCriteriaComponent> _statDescriptionCriteriaComponentMap;
+	private List<IGrouping<String, StatDescription>> _statDescriptionDisplayTextMap;
+	private WeaponOptions _weaponOptions;
+}
