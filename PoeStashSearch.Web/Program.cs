@@ -42,6 +42,7 @@ namespace PoeStashSearch.Web {
 				})
 				.ConfigureWebHostDefaults(webBuilder => {
 					webBuilder.UseStartup<Startup>();
+					webBuilder.UseUrls(options.ListenAddress);
 				}).UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration
 					.ReadFrom.Configuration(hostingContext.Configuration)
 					.Enrich.FromLogContext()
