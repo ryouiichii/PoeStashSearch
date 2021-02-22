@@ -58,6 +58,36 @@ along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
 					</FieldBody>
 				</Field>
 			}
+			@if (_selectedStatDescription?.Any() ?? false) {
+				<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+					<FieldLabel ColumnSize="ColumnSize.Is6">Mod Must Be</FieldLabel>
+					<FieldBody ColumnSize="ColumnSize.Is6">
+						<Tooltip Placement="Placement.Top" Text="Leave empty to allow any mod type.">
+							<Select @bind-SelectedValues="@_modTypesAllowed" Multiple="true" TValue="int">
+								<SelectItem Value="0">Crafted</SelectItem>
+								<SelectItem Value="1">Enchant</SelectItem>
+								<SelectItem Value="2">Explicit</SelectItem>
+								<SelectItem Value="3">Fractured</SelectItem>
+								<SelectItem Value="4">Implicit</SelectItem>
+							</Select>
+						</Tooltip>
+					</FieldBody>
+				</Field>
+				<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
+					<FieldLabel ColumnSize="ColumnSize.Is6">Mod Shouldn't Be</FieldLabel>
+					<FieldBody ColumnSize="ColumnSize.Is6">
+						<Tooltip Placement="Placement.Top" Text="Leave empty to allow any mod type.">
+							<Select @bind-SelectedValues="@_modTypesDisallowed" Multiple="true" TValue="int">
+								<SelectItem Value="0">Crafted</SelectItem>
+								<SelectItem Value="1">Enchant</SelectItem>
+								<SelectItem Value="2">Explicit</SelectItem>
+								<SelectItem Value="3">Fractured</SelectItem>
+								<SelectItem Value="4">Implicit</SelectItem>
+							</Select>
+						</Tooltip>
+					</FieldBody>
+				</Field>
+			}
 		</Fields>
 	</Column>
 </Row>
@@ -101,6 +131,8 @@ along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
 	}
 
 	protected override void OnInitialized() {
+		_modTypesAllowed = new List<int>();
+		_modTypesDisallowed = new List<int>();
 		_numericValues = new (decimal? Maximum, decimal? Minimum)[Constants.MaximumStatDescriptionNumericValueCount];
 	}
 
@@ -109,6 +141,8 @@ along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
 		_numericValueCount = _selectedStatDescription?.First().NumericValueCount ?? 0;
 	}
 
+	private IReadOnlyList<int> _modTypesAllowed;
+	private IReadOnlyList<int> _modTypesDisallowed;
 	private decimal? _numericValueAverageMaximum;
 	private decimal? _numericValueAverageMinimum;
 	private long _numericValueCount;
