@@ -61,15 +61,13 @@ namespace PoeStashSearch.Web.Services {
 			}, nameof(ItemRetrievalService));
 
 			//Wait until settings have been populated before starting main loop
-			while (String.IsNullOrWhiteSpace(settings?.SessionId)) {
+			while (String.IsNullOrWhiteSpace(settings?.SessionId) && !stoppingToken.IsCancellationRequested) {
 				_logger.LogDebug("Waiting for user to supply settings...");
 
 				await Task.Delay(TimeSpan.FromSeconds(SERVICE_STARTUP_PAUSE_DURATION), stoppingToken);
-
-				settings = _settingsManager.GetAllSettings();
 			}
 
-			_stashApiClient.SessionId = settings.SessionId;
+			_stashApiClient.SessionId = settings!.SessionId;
 
 			while (!stoppingToken.IsCancellationRequested) {
 				try {
@@ -141,10 +139,10 @@ namespace PoeStashSearch.Web.Services {
 					_logger.LogInformation("Saving {ItemCount} processed items", allDataItems.Count);
 					await _eventBus.PublishAsync(nameof(ItemRetrievalService), new ItemRetrievalServiceEventArgs { Status = $"Saving {allDataItems.Count} processed items" });
 
-					var savedItems = _databaseContext.Items.SaveItems(true, allDataItems);
+					var savedItemCount = _databaseContext.Items.SaveItems(true, allDataItems);
 
-					_logger.LogInformation("Successfully saved {ItemCount} processed items from {TabCount} tabs, sleeping", allDataItems.Count, stashTabs.Length);
-					await _eventBus.PublishAsync(nameof(ItemRetrievalService), new ItemRetrievalServiceEventArgs { Status = $"Successfully saved {allDataItems.Count} processed items from {stashTabs.Length} tabs, sleeping" });
+					_logger.LogInformation("Successfully saved {ItemCount} processed items from {TabCount} tabs, sleeping", savedItemCount, stashTabs.Length);
+					await _eventBus.PublishAsync(nameof(ItemRetrievalService), new ItemRetrievalServiceEventArgs { Status = $"Successfully saved {savedItemCount} processed items from {stashTabs.Length} tabs, sleeping" });
 				} catch (Exception ex) {
 					_logger.LogError(ex, "Exception while attempting to retrieve and process items");
 				}

@@ -18,23 +18,26 @@ along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
 *@
 @using PoeStashSearch.Web.Events
 @using PoeStashSearch.Web.Services
+@using Microsoft.Extensions.Hosting
 @inherits LayoutComponentBase
 @inject IEventBus EventBus
+@inject IHostApplicationLifetime HostApplicationLifetime
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+	<div class="sidebar">
+		<NavMenu />
+	</div>
 
-    <div class="main">
-        <div class="top-row px-4">
-	        <span>@_status</span>
-        </div>
+	<div class="main">
+		<div class="top-row px-4">
+			<span>@_status</span>
+			<Button Clicked="@(() => HostApplicationLifetime.StopApplication())" Color="Color.Primary" Outline="true" Type="ButtonType.Button">Shutdown</Button>
+		</div>
 
-        <div class="content px-4">
-            @Body
-        </div>
-    </div>
+		<div class="content px-4">
+			@Body
+		</div>
+	</div>
 </div>
 
 @code{
