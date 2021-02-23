@@ -16,16 +16,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
 */
-using System.Collections.Generic;
 
 namespace PoeStashSearch.Data.Models {
-	public record ItemStatDescription {
-		public ICollection<decimal?> NumericValues { get; init; } = null!;
+	public enum StatDescriptionType {
+		Crafted = 0,
 
-		public decimal? NumericValuesAverage { get; init; }
+		Enchant = 1,
 
-		public long StatDescriptionId { get; init; }
+		Explicit = 2,
 
-		public StatDescriptionType StatDescriptionType { get; init; }
+		Fractured = 3,
+
+		Implicit = 4
 	}
 }

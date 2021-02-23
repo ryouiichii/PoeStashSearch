@@ -979,7 +979,7 @@ namespace PoeStashSearch.Data.Repositories {
 
 				using var itemStatDescriptionCommand = connection.CreateCommand();
 				
-				itemStatDescriptionCommand.CommandText = "INSERT INTO ItemStatDescription (ItemId, StatDescriptionId, NumericValue01, NumericValue02, NumericValue03, NumericValue04, NumericValue05, NumericValue06, NumericValue07, NumericValuesAverage) VALUES ($id, $statDescriptionId, $numericValue01, $numericValue02, $numericValue03, $numericValue04, $numericValue05, $numericValue06, $numericValue07, $numericValuesAverage);";
+				itemStatDescriptionCommand.CommandText = "INSERT INTO ItemStatDescription (ItemId, StatDescriptionId, NumericValue01, NumericValue02, NumericValue03, NumericValue04, NumericValue05, NumericValue06, NumericValue07, NumericValuesAverage, StatDescriptionTypeId) VALUES ($id, $statDescriptionId, $numericValue01, $numericValue02, $numericValue03, $numericValue04, $numericValue05, $numericValue06, $numericValue07, $numericValuesAverage, $statDescriptionTypeId);";
 				var numericValue01Parameter = itemStatDescriptionCommand.CreateParameter();
 				var numericValue02Parameter = itemStatDescriptionCommand.CreateParameter();
 				var numericValue03Parameter = itemStatDescriptionCommand.CreateParameter();
@@ -989,6 +989,7 @@ namespace PoeStashSearch.Data.Repositories {
 				var numericValue07Parameter = itemStatDescriptionCommand.CreateParameter();
 				var numericValuesAverageParameter = itemStatDescriptionCommand.CreateParameter();
 				var statDescriptionIdParameter = itemStatDescriptionCommand.CreateParameter();
+				var statDescriptionTypeIdParameter = itemStatDescriptionCommand.CreateParameter();
 
 				numericValue01Parameter.ParameterName = "$numericValue01";
 				numericValue02Parameter.ParameterName = "$numericValue02";
@@ -999,6 +1000,7 @@ namespace PoeStashSearch.Data.Repositories {
 				numericValue07Parameter.ParameterName = "$numericValue07";
 				numericValuesAverageParameter.ParameterName = "$numericValuesAverage";
 				statDescriptionIdParameter.ParameterName = "$statDescriptionId";
+				statDescriptionTypeIdParameter.ParameterName = "$statDescriptionTypeId";
 
 				itemStatDescriptionCommand.Parameters.Add(idParameter);
 				itemStatDescriptionCommand.Parameters.Add(numericValue01Parameter);
@@ -1010,6 +1012,7 @@ namespace PoeStashSearch.Data.Repositories {
 				itemStatDescriptionCommand.Parameters.Add(numericValue07Parameter);
 				itemStatDescriptionCommand.Parameters.Add(numericValuesAverageParameter);
 				itemStatDescriptionCommand.Parameters.Add(statDescriptionIdParameter);
+				itemStatDescriptionCommand.Parameters.Add(statDescriptionTypeIdParameter);
 
 				itemStatDescriptionCommand.Transaction = transaction;
 				foreach (var itemStatDescription in item.StatDescriptions) {
@@ -1022,6 +1025,7 @@ namespace PoeStashSearch.Data.Repositories {
 					numericValue07Parameter.Value = itemStatDescription.NumericValues.ElementAtOrDefault(6) ?? (Object)DBNull.Value;
 					numericValuesAverageParameter.Value = itemStatDescription.NumericValuesAverage ?? (Object)DBNull.Value;
 					statDescriptionIdParameter.Value = itemStatDescription.StatDescriptionId;
+					statDescriptionTypeIdParameter.Value = itemStatDescription.StatDescriptionType;
 
 					itemStatDescriptionCommand.ExecuteNonQuery();
 				}

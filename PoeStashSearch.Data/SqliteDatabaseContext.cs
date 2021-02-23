@@ -117,7 +117,8 @@ namespace PoeStashSearch.Data {
 			                      " NumericValue05 REAL," +
 			                      " NumericValue06 REAL," +
 			                      " NumericValue07 REAL," +
-			                      " NumericValuesAverage REAL);" +
+			                      " NumericValuesAverage REAL," +
+			                      " StatDescriptionTypeId INTEGER NOT NULL);" +
 			                      "CREATE INDEX IDX_ItemStatDescription_StatDescriptionId ON ItemStatDescription(StatDescriptionId);" +
 			                      "CREATE TABLE Settings (" +
 			                      " AccountName TEXT NOT NULL," +

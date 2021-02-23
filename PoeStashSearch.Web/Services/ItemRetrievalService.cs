@@ -28,6 +28,7 @@ using Microsoft.Extensions.Logging;
 using PoeStashSearch.Api.Http;
 using PoeStashSearch.Api.Models;
 using PoeStashSearch.Data;
+using PoeStashSearch.Data.Models;
 using PoeStashSearch.Web.Events;
 using PoeStashSearch.Web.Settings;
 using ApiItem = PoeStashSearch.Api.Models.Item;
@@ -91,38 +92,14 @@ namespace PoeStashSearch.Web.Services {
 							if (!String.IsNullOrWhiteSpace(itemDefinition?.Name)) {
 								_logger.LogDebug("Found matching item definition \"{ItemDefinitionName}\" for \"{ItemName} {ItemTypeLine}\"", itemDefinition.Name, item.Name, item.TypeLine);
 
-								var allItemMods = new List<String>();
-								allItemMods.AddRange(item.CraftedMods ?? _emptyStringList);
-								allItemMods.AddRange(item.ExplicitMods ?? _emptyStringList);
-								allItemMods.AddRange(item.EnchantMods ?? _emptyStringList);
-								allItemMods.AddRange(item.FracturedMods ?? _emptyStringList);
-								allItemMods.AddRange(item.ImplicitMods ?? _emptyStringList);
-
 								var dataItem = _objectMapper.Map<DataItem>(item) with { ItemDefinitionId = itemDefinition.Id, StashIndex = stashTabs[i].Index, StashName = stashTabs[i].Name! };
 								var statDescriptions = _databaseContext.Stats.GetStatDescriptionsForItemDefinition(itemDefinition.Id);
 
-								foreach (var itemMod in allItemMods) {
-									foreach (var statDescription in statDescriptions) {
-										var regexMatch = Regex.Match(itemMod, statDescription.RegularExpression);
-										if (regexMatch.Success) {
-											var numericValues = new decimal?[Constants.MaximumStatDescriptionNumericValueCount];
-
-											if (regexMatch.Groups["number"].Success) {
-												for (var j = 0; j < Constants.MaximumStatDescriptionNumericValueCount; j++) {
-													numericValues[j] = regexMatch.Groups["number"].Captures.Count > j ? (decimal.TryParse(regexMatch.Groups["number"].Captures[j].Value, out var maybeNumericValue) ? (decimal?)maybeNumericValue : null) : null;
-												}
-											}
-
-											dataItem.StatDescriptions.Add(new() {
-												NumericValues = numericValues,
-												NumericValuesAverage = numericValues.Average(),
-												StatDescriptionId = statDescription.Id
-											});
-
-											break;
-										}
-									}
-								}
+								AddStatDescriptionsToItem(dataItem, item.CraftedMods ?? _emptyStringList, StatDescriptionType.Crafted, statDescriptions);
+								AddStatDescriptionsToItem(dataItem, item.EnchantMods ?? _emptyStringList, StatDescriptionType.Enchant, statDescriptions);
+								AddStatDescriptionsToItem(dataItem, item.ExplicitMods ?? _emptyStringList, StatDescriptionType.Explicit, statDescriptions);
+								AddStatDescriptionsToItem(dataItem, item.FracturedMods ?? _emptyStringList, StatDescriptionType.Fractured, statDescriptions);
+								AddStatDescriptionsToItem(dataItem, item.ImplicitMods ?? _emptyStringList, StatDescriptionType.Implicit, statDescriptions);
 
 								allDataItems.Add(dataItem);
 							} else {
@@ -151,6 +128,32 @@ namespace PoeStashSearch.Web.Services {
 			}
 		}
 		#endregion
+
+		private void AddStatDescriptionsToItem(DataItem dataItem, IEnumerable<String> itemMods, StatDescriptionType itemModType, ICollection<StatDescription> statDescriptions) {
+			foreach (var itemMod in itemMods) {
+				foreach (var statDescription in statDescriptions) {
+					var regexMatch = Regex.Match(itemMod, statDescription.RegularExpression);
+					if (regexMatch.Success) {
+						var numericValues = new decimal?[Constants.MaximumStatDescriptionNumericValueCount];
+
+						if (regexMatch.Groups["number"].Success) {
+							for (var j = 0; j < Constants.MaximumStatDescriptionNumericValueCount; j++) {
+								numericValues[j] = regexMatch.Groups["number"].Captures.Count > j ? (decimal.TryParse(regexMatch.Groups["number"].Captures[j].Value, out var maybeNumericValue) ? (decimal?) maybeNumericValue : null) : null;
+							}
+						}
+
+						dataItem.StatDescriptions.Add(new() {
+							NumericValues = numericValues,
+							NumericValuesAverage = numericValues.Average(),
+							StatDescriptionId = statDescription.Id,
+							StatDescriptionType = itemModType
+						});
+
+						break;
+					}
+				}
+			}
+		}
 
 		private const int SERVICE_STARTUP_PAUSE_DURATION = 1;
 		private readonly IDatabaseContext _databaseContext;
