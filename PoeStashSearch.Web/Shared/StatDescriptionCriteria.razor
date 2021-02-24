@@ -48,13 +48,13 @@ along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
 				<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
 					<FieldLabel ColumnSize="ColumnSize.Is6">Minimum Average</FieldLabel>
 					<FieldBody ColumnSize="ColumnSize.Is6">
-						<NumericEdit TValue="decimal?" Value="@_numericValueAverageMinimum"/>
+						<NumericEdit @bind-Value="@_numericValueAverageMinimum" TValue="decimal?"/>
 					</FieldBody>
 				</Field>
 				<Field ColumnSize="ColumnSize.Is6" Horizontal="true">
 					<FieldLabel ColumnSize="ColumnSize.Is6">Maximum Average</FieldLabel>
 					<FieldBody ColumnSize="ColumnSize.Is6">
-						<NumericEdit TValue="decimal?" Value="@_numericValueAverageMaximum"/>
+						<NumericEdit @bind-Value="@_numericValueAverageMaximum" TValue="decimal?"/>
 					</FieldBody>
 				</Field>
 			}
@@ -106,6 +106,8 @@ along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
 	public StatDescriptionCriteriaModel? GetStatDescriptionCriteriaModel() {
 		if (_selectedStatDescription?.Any() ?? false) {
 			var statDescriptionCriteria = new StatDescriptionCriteriaModel {
+				AllowedStatDescriptionTypeIds = _modTypesAllowed?.ToList(),
+				DisallowedStatDescriptionTypeIds = _modTypesDisallowed?.ToList(),
 				NumericValueMaximumAverage = _numericValueAverageMaximum,
 				NumericValueMinimumAverage = _numericValueAverageMinimum,
 				NumericValueRanges = new Dictionary<int, (decimal? MaximumValue, decimal? MinimumValue)>(),
@@ -131,8 +133,6 @@ along with PoeStashSearch.  If not, see <http://www.gnu.org/licenses/>.
 	}
 
 	protected override void OnInitialized() {
-		_modTypesAllowed = new List<int>();
-		_modTypesDisallowed = new List<int>();
 		_numericValues = new (decimal? Maximum, decimal? Minimum)[Constants.MaximumStatDescriptionNumericValueCount];
 	}
 

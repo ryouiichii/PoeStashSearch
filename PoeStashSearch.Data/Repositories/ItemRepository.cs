@@ -81,6 +81,14 @@ namespace PoeStashSearch.Data.Repositories {
 			for (var i = 0; i < nonNullStatDescriptionCriterias.Length; i++) {
 				commandTextBuilder.Append($"{(i > 0 ? " INTERSECT " : " Id IN (")}SELECT ItemId FROM ItemStatDescription WHERE StatDescriptionId IN ({String.Join(", ", nonNullStatDescriptionCriterias[i].StatDescriptionIds!)})");
 
+				if (nonNullStatDescriptionCriterias[i].AllowedStatDescriptionTypeIds?.Any() ?? false) {
+					commandTextBuilder.Append($" AND StatDescriptionTypeId IN ({String.Join(", ", nonNullStatDescriptionCriterias[i].AllowedStatDescriptionTypeIds!)})");
+				}
+
+				if (nonNullStatDescriptionCriterias[i].DisallowedStatDescriptionTypeIds?.Any() ?? false) {
+					commandTextBuilder.Append($" AND StatDescriptionTypeId NOT IN ({String.Join(", ", nonNullStatDescriptionCriterias[i].DisallowedStatDescriptionTypeIds!)})");
+				}
+
 				if (nonNullStatDescriptionCriterias[i].NumericValueMaximumAverage.HasValue) {
 					commandTextBuilder.Append($" AND NumericValuesAverage <= $numericValuesAverageMax{i}");
 					var numericValuesAverageMaximumParameter = command.CreateParameter();

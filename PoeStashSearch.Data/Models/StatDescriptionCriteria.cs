@@ -20,6 +20,10 @@ using System.Collections.Generic;
 
 namespace PoeStashSearch.Data.Models {
 	public record StatDescriptionCriteria {
+		public ICollection<int>? AllowedStatDescriptionTypeIds { get; init; }
+
+		public ICollection<int>? DisallowedStatDescriptionTypeIds { get; init; }
+
 		public decimal? NumericValueMaximumAverage { get; init; }
 
 		public decimal? NumericValueMinimumAverage { get; init; }
